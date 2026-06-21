@@ -1,0 +1,32 @@
+{
+  "displayName": "English (USA)",
+  "fakerLocale": "en_US",
+  "genres": [
+    "Pop", "Rock", "Hip-Hop", "R&B", "Country", "Jazz", "Classical",
+    "Electronic", "Metal", "Indie", "Folk", "Blues", "Reggae", "Soul",
+    "Punk", "Alternative", "Dance", "Latin", "Gospel", "Ambient"
+  ],
+  "reviewTemplates": [
+  "A {adjective} take on {genre}, \"{title}\" pairs {adjective2} energy with {artist}'s {noun} hooks.",
+  "{artist} delivers a {adjective} performance, blending {noun} and {noun2} into something {adjective2}.",
+  "This track {verb}s with {adjective} energy, though the {noun} feels a bit {adjective2} by the end.",
+  "Hard to ignore — \"{title}\" is {adjective} from the first {noun} to the last.",
+  "{artist} keeps it {adjective}, letting the {genre} influences {verb} through every {noun}."
+],
+"lyricTemplates": [
+  "{adjective} nights, {adjective2} lights",
+  "the {noun} keeps {verb}ing on",
+  "we're {adjective}, we're {adjective2}",
+  "a {noun} for the {noun2}",
+  "{verb} like it's the last {noun}",
+  "{adjective} hearts under {adjective2} skies",
+  "running through the {noun}",
+  "nothing but {adjective} and {noun}"
+],
+"wordBank": {
+  "adjectives": ["golden", "broken", "electric", "silent", "wild", "endless", "fading", "neon", "hollow", "burning", "frozen", "velvet", "restless", "midnight", "crimson", "distant", "fearless", "tender", "savage", "quiet"],
+  "nouns": ["heart", "fire", "river", "shadow", "dream", "highway", "horizon", "echo", "storm", "ocean", "mirror", "garden", "wolf", "diamond", "feather", "wave", "stranger", "memory", "thunder", "rose"],
+  "verbs": ["burn", "fall", "run", "shine", "fly", "breathe", "dance", "break", "rise", "fade", "scream", "whisper", "chase", "drift", "collide", "vanish", "wander", "ignite", "remember"],
+  "adverbs": ["slowly", "forever", "again", "tonight", "softly", "endlessly", "blindly", "quietly", "wildly", "alone"]
+}
+}

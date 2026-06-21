@@ -1,0 +1,32 @@
+{
+  "displayName": "German (Germany)",
+  "fakerLocale": "de",
+  "genres": [
+    "Pop", "Rock", "Hip-Hop", "R&B", "Schlager", "Jazz", "Klassik",
+    "Elektronik", "Metal", "Indie", "Folk", "Blues", "Reggae", "Soul",
+    "Punk", "Alternative", "Tanzmusik", "Latin", "Gospel", "Ambient"
+  ],
+  "reviewTemplates": [
+  "Eine {adjective} Interpretation von {genre}: \"{title}\" verbindet {adjective2} Energie mit den unverwechselbaren {noun}-Hooks von {artist}.",
+  "{artist} liefert eine {adjective} Performance und vermischt {noun} und {noun2} zu etwas {adjective2}em.",
+  "Dieser Track {verb} mit {adjective} Energie, auch wenn der {noun} gegen Ende etwas {adjective2} wirkt.",
+  "Schwer zu ignorieren — \"{title}\" ist von Anfang bis Ende {adjective}.",
+  "{artist} bleibt {adjective} und lässt die {genre}-Einflüsse durch jeden {noun} wirken."
+],
+"lyricTemplates": [
+  "{adjective} Nächte, {adjective2} Lichter",
+  "der {noun} geht einfach weiter",
+  "wir sind {adjective}, wir sind {adjective2}",
+  "ein {noun} für den {noun2}",
+  "{verb} wie der letzte {noun}",
+  "{adjective} Herzen unter {adjective2} Himmeln",
+  "wir laufen durch den {noun}",
+  "nichts als {adjective} und {noun}"
+],
+"wordBank": {
+  "adjectives": ["golden", "zerbrochen", "elektrisch", "still", "wild", "endlos", "verblassend", "leer", "brennend", "gefroren", "ruhelos", "zart", "mutig", "fern", "leise", "samtig", "rastlos", "rot", "dunkel", "frei"],
+  "nouns": ["Herz", "Feuer", "Fluss", "Schatten", "Traum", "Autobahn", "Horizont", "Echo", "Sturm", "Ozean", "Spiegel", "Garten", "Wolf", "Diamant", "Feder", "Welle", "Fremde", "Erinnerung", "Donner", "Rose"],
+  "verbs": ["brennen", "fallen", "laufen", "leuchten", "fliegen", "atmen", "tanzen", "brechen", "steigen", "verblassen", "schreien", "flüstern", "jagen", "treiben", "verschwinden", "wandern", "zünden", "erinnern"],
+  "adverbs": ["langsam", "immer wieder", "heute Nacht", "leise", "endlos", "blind", "still", "wild", "allein"]
+}
+}
