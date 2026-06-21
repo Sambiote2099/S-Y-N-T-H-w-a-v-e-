@@ -242,5 +242,18 @@ uses simplified major/minor-family progressions even for exotic scales
 (Dorian, Phrygian, etc.), since tonal's roman-numeral builder only
 understands major/minor diatonic quality — melody still draws its actual
 notes from the true selected scale.
+
+## 25. Cover text rendering requires bundled fonts, not system fonts
+node-canvas has no fonts of its own — locally it was silently using
+whatever fonts the OS had installed (Arial/Helvetica Neue on Windows),
+which don't exist on Vercel's serverless containers, causing blank
+title/artist text in production. **Decision:** bundle Noto Sans (Regular +
+Bold, static instances extracted from Google's variable font — variable
+fonts have inconsistent weight-axis support in node-canvas) directly in the
+repo at `src/assets/fonts/`, register them explicitly via `registerFont()`,
+and use `outputFileTracingIncludes` in `next.config.ts` so Vercel's bundler
+actually ships the font files with the serverless function. Noto Sans was
+chosen specifically for its Cyrillic + Latin Extended coverage, needed for
+the Ukrainian and German locales.
 ---
 This file is updated as new ambiguities are resolved in later phases.

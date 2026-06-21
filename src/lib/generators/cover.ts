@@ -1,6 +1,25 @@
-import { createCanvas, loadImage } from "canvas";
 import type { CanvasRenderingContext2D } from "canvas";
 import { createSplitmix64 } from "@/lib/rng";
+
+import path from "path";
+import { createCanvas, loadImage, registerFont } from "canvas";
+
+const FONT_FAMILY = "AppSans";
+let fontsRegistered = false;
+
+/**
+ * Registers our bundled fonts once per cold start. Deliberately uses two
+ * separate static weight files (not a variable font) and process.cwd()
+ * (not __dirname, per Vercel's own guidance) — see ASSUMPTIONS.md #25.
+ */
+function ensureFontsRegistered() {
+  if (fontsRegistered) return;
+  const regularPath = path.resolve(process.cwd(), "src/assets/fonts/NotoSans-Regular.ttf");
+  const boldPath = path.resolve(process.cwd(), "src/assets/fonts/NotoSans-Bold.ttf");
+  registerFont(regularPath, { family: FONT_FAMILY, weight: "normal" });
+  registerFont(boldPath, { family: FONT_FAMILY, weight: "bold" });
+  fontsRegistered = true;
+}
 
 type Rng = { next(): number };
 interface CoverInput {
@@ -746,7 +765,7 @@ function fitText(ctx: Ctx, text: string, maxWidth: number, maxLines: number, sta
   let fontSize = startSize;
   let lines: string[] = [text];
   while (fontSize > minSize) {
-    ctx.font = `bold ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `bold ${fontSize}px ${FONT_FAMILY}`;
     lines = wrapTextCanvas(ctx, text, maxWidth, maxLines);
     if (lines.every((l) => ctx.measureText(l).width <= maxWidth)) break;
     fontSize -= 3;
@@ -789,20 +808,20 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
     if (atBottom) {
       const bottomY = SIZE - 60;
       lines.forEach((line, i) => {
-        ctx.font = `bold ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
+        ctx.font = `bold ${fontSize}px ${FONT_FAMILY}`;
         ctx.fillText(line, SIZE / 2, bottomY - (lines.length - 1 - i) * lineHeight);
       });
-      ctx.font = `600 20px "Helvetica Neue", Arial, sans-serif`;
+      ctx.font = `bold 20px ${FONT_FAMILY}`;
       ctx.shadowBlur = 8;
       ctx.fillStyle = inkSubtle;
       ctx.fillText(truncate(artist, 28).toUpperCase(), SIZE / 2, SIZE - 26);
     } else {
       const topY = 46;
       lines.forEach((line, i) => {
-        ctx.font = `bold ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
+        ctx.font = `bold ${fontSize}px ${FONT_FAMILY}`;
         ctx.fillText(line, SIZE / 2, topY + i * lineHeight);
       });
-      ctx.font = `600 20px "Helvetica Neue", Arial, sans-serif`;
+      ctx.font = `bold 20px ${FONT_FAMILY}`;
       ctx.shadowBlur = 8;
       ctx.fillStyle = inkSubtle;
       ctx.fillText(truncate(artist, 28).toUpperCase(), SIZE / 2, topY + lines.length * lineHeight + 8);
@@ -810,7 +829,7 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
     ctx.shadowBlur = 0;
   } else if (plan.placement === "cornerCard") {
     const titleLines = wrapTextCanvas(ctx, title.toUpperCase(), 170, 2);
-    ctx.font = `bold 19px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `bold 19px ${FONT_FAMILY}`;
     const cardW = 220;
     const cardH = 40 + titleLines.length * 24 + 22;
     const corner = rngInt(localRng, 0, 3);
@@ -830,10 +849,10 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
     ctx.textAlign = "left";
     ctx.fillStyle = ink;
     titleLines.forEach((line, i) => {
-      ctx.font = `bold 19px "Helvetica Neue", Arial, sans-serif`;
+      ctx.font = `bold 19px ${FONT_FAMILY}`;
       ctx.fillText(line, x + 16, y + 28 + i * 24);
     });
-    ctx.font = `600 14px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `bold 14px ${FONT_FAMILY}`;
     ctx.fillStyle = cardSubtitle;
     ctx.fillText(truncate(artist, 22).toUpperCase(), x + 16, y + cardH - 14);
     ctx.restore();
@@ -848,12 +867,12 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
     ctx.fillStyle = ink;
     ctx.shadowColor = glow;
     ctx.shadowBlur = 10;
-    ctx.font = `bold 28px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `bold 28px ${FONT_FAMILY}`;
     ctx.fillText(truncate(title, 24).toUpperCase(), 0, 0);
     ctx.restore();
 
     ctx.textAlign = side === "left" ? "left" : "right";
-    ctx.font = `600 16px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `bold 16px ${FONT_FAMILY}`;
     ctx.fillStyle = inkFaint;
     ctx.shadowBlur = 6;
     ctx.fillText(truncate(artist, 24).toUpperCase(), side === "left" ? 16 : SIZE - 16, SIZE - 24);
@@ -866,9 +885,9 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
     ctx.fillStyle = ink;
     ctx.shadowColor = glowSoft;
     ctx.shadowBlur = 8;
-    ctx.font = `600 15px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `bold 15px ${FONT_FAMILY}`;
     ctx.fillText(truncate(title, 30).toUpperCase(), x, y);
-    ctx.font = `400 12px "Helvetica Neue", Arial, sans-serif`;
+    ctx.font = `normal 12px ${FONT_FAMILY}`;
     ctx.fillStyle = inkFaint;
     ctx.fillText(truncate(artist, 30).toUpperCase(), x, y + 18);
     ctx.shadowBlur = 0;
@@ -876,6 +895,7 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
 }
 
 export async function generateCoverDataUrl(rng: Rng, { title, artist, genre, genreIndex }: CoverInput): Promise<string> {
+  ensureFontsRegistered();
   const canvas = createCanvas(SIZE, SIZE);
   const ctx = canvas.getContext("2d");
 
