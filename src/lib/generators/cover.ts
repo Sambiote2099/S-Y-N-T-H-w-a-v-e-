@@ -1,6 +1,7 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
 import type { CanvasRenderingContext2D } from "canvas";
 import { createSplitmix64 } from "@/lib/rng";
+import { readFileSync } from "fs";
 import path from "path";
 
 type Rng = { next(): number };
@@ -63,12 +64,33 @@ const AGING_EFFECT_WORDS = [
 ];
 
 // Register fonts once at module load
-try {
-  const fontsDir = path.join(process.cwd(), "assets", "fonts");
-  registerFont(path.join(fontsDir, "NotoSans-Bold.ttf"), { family: "NotoSans", weight: "bold" });
-  registerFont(path.join(fontsDir, "NotoSans-Regular.ttf"), { family: "NotoSans", weight: "normal" });
-} catch (error) {
-  console.warn("Failed to register fonts:", error);
+let fontsRegistered = false;
+function ensureFontsRegistered() {
+  if (fontsRegistered) return;
+  try {
+    // Try multiple possible paths (Vercel, local dev, etc.)
+    const possiblePaths = [
+      { bold: path.join(process.cwd(), "assets", "fonts", "NotoSans-Bold.ttf"), regular: path.join(process.cwd(), "assets", "fonts", "NotoSans-Regular.ttf") },
+      { bold: path.join(process.cwd(), "public", "NotoSans-Bold.ttf"), regular: path.join(process.cwd(), "public", "NotoSans-Regular.ttf") },
+      { bold: path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoSans-Bold.ttf"), regular: path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoSans-Regular.ttf") },
+    ];
+
+    for (const paths of possiblePaths) {
+      try {
+        registerFont(paths.bold, { family: "NotoSans", weight: "bold" });
+        registerFont(paths.regular, { family: "NotoSans", weight: "normal" });
+        console.log("Fonts registered successfully from:", paths.bold);
+        fontsRegistered = true;
+        return;
+      } catch {
+        continue;
+      }
+    }
+    
+    console.warn("Could not register custom fonts, will use system fonts");
+  } catch (error) {
+    console.error("Failed to register fonts:", error);
+  }
 }
 
 type GenreArchetype = "bright" | "intense" | "digital" | "smooth" | "introspective" | "classic";
@@ -886,6 +908,8 @@ function drawTextOverlay(ctx: Ctx, title: string, artist: string, plan: TextPlac
 }
 
 export async function generateCoverDataUrl(rng: Rng, { title, artist, genre, genreIndex }: CoverInput): Promise<string> {
+  ensureFontsRegistered();
+  
   const canvas = createCanvas(SIZE, SIZE);
   const ctx = canvas.getContext("2d");
 
