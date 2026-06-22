@@ -1,7 +1,3 @@
 {
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "includeFiles": "assets/fonts/**"
-    }
-  }
+  "outputDirectory": ".next"
 }

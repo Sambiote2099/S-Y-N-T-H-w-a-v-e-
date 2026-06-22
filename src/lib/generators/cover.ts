@@ -68,28 +68,31 @@ let fontsRegistered = false;
 function ensureFontsRegistered() {
   if (fontsRegistered) return;
   try {
-    // Try multiple possible paths (Vercel, local dev, etc.)
-    const possiblePaths = [
-      { bold: path.join(process.cwd(), "assets", "fonts", "NotoSans-Bold.ttf"), regular: path.join(process.cwd(), "assets", "fonts", "NotoSans-Regular.ttf") },
-      { bold: path.join(process.cwd(), "public", "NotoSans-Bold.ttf"), regular: path.join(process.cwd(), "public", "NotoSans-Regular.ttf") },
-      { bold: path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoSans-Bold.ttf"), regular: path.join(__dirname, "..", "..", "..", "assets", "fonts", "NotoSans-Regular.ttf") },
-    ];
-
-    for (const paths of possiblePaths) {
-      try {
-        registerFont(paths.bold, { family: "NotoSans", weight: "bold" });
-        registerFont(paths.regular, { family: "NotoSans", weight: "normal" });
-        console.log("Fonts registered successfully from:", paths.bold);
-        fontsRegistered = true;
-        return;
-      } catch {
-        continue;
-      }
-    }
+    // In serverless environments like Vercel, use public folder
+    const publicDir = path.join(process.cwd(), "public");
+    const boldPath = path.join(publicDir, "NotoSans-Bold.ttf");
+    const regularPath = path.join(publicDir, "NotoSans-Regular.ttf");
     
-    console.warn("Could not register custom fonts, will use system fonts");
+    if (readFileSync(boldPath) && readFileSync(regularPath)) {
+      registerFont(boldPath, { family: "NotoSans", weight: "bold" });
+      registerFont(regularPath, { family: "NotoSans", weight: "normal" });
+      fontsRegistered = true;
+      console.log("Fonts registered successfully from public folder");
+    }
   } catch (error) {
-    console.error("Failed to register fonts:", error);
+    console.warn("Could not register custom fonts from public folder, trying assets...");
+    try {
+      const assetsDir = path.join(process.cwd(), "assets", "fonts");
+      const boldPath = path.join(assetsDir, "NotoSans-Bold.ttf");
+      const regularPath = path.join(assetsDir, "NotoSans-Regular.ttf");
+      
+      registerFont(boldPath, { family: "NotoSans", weight: "bold" });
+      registerFont(regularPath, { family: "NotoSans", weight: "normal" });
+      fontsRegistered = true;
+      console.log("Fonts registered successfully from assets folder");
+    } catch (assetError) {
+      console.error("Failed to register fonts from both locations:", assetError);
+    }
   }
 }
 
