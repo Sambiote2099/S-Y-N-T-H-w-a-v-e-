@@ -27,8 +27,14 @@ export async function renderSongToMp3(audio: SongAudio): Promise<Blob> {
   const buffer = await Tone.Offline(() => {
   const chorus = new Tone.Chorus(audio.effects.chorusFrequency, 2.5, 0.7).start();
   chorus.wet.value = audio.effects.chorusWet;
-  const delay = new Tone.FeedbackDelay(audio.effects.delayTime, audio.effects.delayFeedback).toDestination();
-  chorus.connect(delay);
+  const compressor = new Tone.Compressor({ threshold: audio.effects.compressorThreshold, ratio: audio.effects.compressorRatio });
+const eq3 = new Tone.EQ3({ low: audio.effects.eqLow, mid: audio.effects.eqMid, high: audio.effects.eqHigh });
+compressor.connect(eq3);
+eq3.toDestination();
+
+const delay = new Tone.FeedbackDelay(audio.effects.delayTime, audio.effects.delayFeedback);
+delay.connect(compressor);
+chorus.connect(delay);
 
   const bassSynth = new Tone.Synth({ oscillator: { type: audio.tracks.bass.wave }, envelope: audio.tracks.bass.envelope }).connect(delay);
   const padSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: audio.tracks.pad.wave }, envelope: audio.tracks.pad.envelope }).connect(chorus);
@@ -40,6 +46,14 @@ export async function renderSongToMp3(audio: SongAudio): Promise<Blob> {
       kickSynth = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 4, envelope: { attack: 0.001, decay: 0.3, sustain: 0 } }).connect(delay);
       hatSynth = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0 } }).connect(delay);
     }
+    let countermelodySynth: InstanceType<ToneModule["Synth"]> | null = null;
+if (audio.tracks.countermelody) {
+  countermelodySynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0.3, release: 0.4 } }).connect(chorus);
+}
+let atmosphereSynth: InstanceType<ToneModule["PolySynth"]> | null = null;
+if (audio.tracks.atmosphere) {
+  atmosphereSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 2, decay: 1, sustain: 0.8, release: 3 } }).connect(delay);
+}
 
     audio.tracks.bass.notes.forEach((n) => bassSynth.triggerAttackRelease(n.note, n.duration, n.time, n.velocity));
     audio.tracks.pad.chords.forEach((c) => padSynth.triggerAttackRelease(c.notes, c.duration, c.time, c.velocity));
@@ -48,6 +62,8 @@ export async function renderSongToMp3(audio: SongAudio): Promise<Blob> {
 
 const noiseHits = [...(audio.tracks.percussion?.hat ?? []), ...(audio.tracks.percussion?.snare ?? [])].sort((a, b) => a.time - b.time);
 noiseHits.forEach((hit) => hatSynth!.triggerAttackRelease(hit.duration, hit.time, hit.velocity));
+audio.tracks.countermelody?.notes.forEach((n) => countermelodySynth!.triggerAttackRelease(n.note, n.duration, n.time, n.velocity));
+audio.tracks.atmosphere?.chords.forEach((c) => atmosphereSynth!.triggerAttackRelease(c.notes, c.duration, c.time, c.velocity));
   }, audio.durationSeconds + 0.5);
 
   const channelData = buffer.toArray(0) as Float32Array;

@@ -63,14 +63,20 @@ export function useSongPlayback(audio: SongAudio | null) {
     const Tone = toneRef.current;
     await Tone.start();
 
-    const chorus = new Tone.Chorus(audio.effects.chorusFrequency, 2.5, 0.7).start();
-    chorus.wet.value = audio.effects.chorusWet;
-    const delay = new Tone.FeedbackDelay(audio.effects.delayTime, audio.effects.delayFeedback);
-    const reverb = new Tone.Reverb({ decay: 2.2, wet: audio.effects.reverbWet });
-    await reverb.ready;
-    chorus.connect(delay);
-    delay.connect(reverb);
-    reverb.toDestination();
+    const compressor = new Tone.Compressor({ threshold: audio.effects.compressorThreshold, ratio: audio.effects.compressorRatio });
+const eq3 = new Tone.EQ3({ low: audio.effects.eqLow, mid: audio.effects.eqMid, high: audio.effects.eqHigh });
+compressor.connect(eq3);
+eq3.toDestination();
+
+const chorus = new Tone.Chorus(audio.effects.chorusFrequency, 2.5, 0.7).start();
+chorus.wet.value = audio.effects.chorusWet;
+
+const delay = new Tone.FeedbackDelay(audio.effects.delayTime, audio.effects.delayFeedback);
+const reverb = new Tone.Reverb({ decay: 2.2, wet: audio.effects.reverbWet });
+await reverb.ready;
+chorus.connect(delay);
+delay.connect(reverb);
+reverb.connect(compressor);
 
     const bassSynth = new Tone.Synth({ oscillator: { type: audio.tracks.bass.wave }, envelope: audio.tracks.bass.envelope }).connect(delay);
     const padSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: audio.tracks.pad.wave }, envelope: audio.tracks.pad.envelope }).connect(chorus);
@@ -83,18 +89,37 @@ export function useSongPlayback(audio: SongAudio | null) {
       hatSynth = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0 } }).connect(delay);
     }
 
+    let countermelodySynth: InstanceType<ToneModule["Synth"]> | null = null;
+if (audio.tracks.countermelody) {
+  countermelodySynth = new Tone.Synth({
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.02, decay: 0.3, sustain: 0.3, release: 0.4 },
+  }).connect(chorus);
+}
+
+let atmosphereSynth: InstanceType<ToneModule["PolySynth"]> | null = null;
+if (audio.tracks.atmosphere) {
+  atmosphereSynth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: "sine" },
+    envelope: { attack: 2, decay: 1, sustain: 0.8, release: 3 },
+  }).connect(reverb);
+}
     // Tracked BEFORE scheduling any notes — so a scheduling error below
     // can never leave these nodes orphaned and untracked.
     createdNodes = {
       dispose: () => {
-        bassSynth.dispose();
-        padSynth.dispose();
-        melodySynth.dispose();
-        kickSynth?.dispose();
-        hatSynth?.dispose();
-        chorus.dispose();
-        delay.dispose();
-        reverb.dispose();
+    bassSynth.dispose();
+    padSynth.dispose();
+    melodySynth.dispose();
+    kickSynth?.dispose();
+    hatSynth?.dispose();
+    countermelodySynth?.dispose();
+    atmosphereSynth?.dispose();
+    chorus.dispose();
+    delay.dispose();
+    reverb.dispose();
+    compressor.dispose();
+    eq3.dispose();
       },
     };
 
@@ -105,7 +130,8 @@ export function useSongPlayback(audio: SongAudio | null) {
     audio.tracks.pad.chords.forEach((c) => padSynth.triggerAttackRelease(c.notes, c.duration, startTime + c.time, c.velocity));
     audio.tracks.melody.notes.forEach((n) => melodySynth.triggerAttackRelease(n.note, n.duration, startTime + n.time, n.velocity));
     audio.tracks.percussion?.kick.forEach((hit) => kickSynth!.triggerAttackRelease("C2", hit.duration, startTime + hit.time, hit.velocity));
-
+    audio.tracks.countermelody?.notes.forEach((n) => countermelodySynth!.triggerAttackRelease(n.note, n.duration, startTime + n.time, n.velocity));
+    audio.tracks.atmosphere?.chords.forEach((c) => atmosphereSynth!.triggerAttackRelease(c.notes, c.duration, startTime + c.time, c.velocity));
 // hat and snare share one synth, so the combined sequence sent to it must
 // be chronological — sorting each array separately isn't enough.
 const noiseHits = [...(audio.tracks.percussion?.hat ?? []), ...(audio.tracks.percussion?.snare ?? [])].sort((a, b) => a.time - b.time);

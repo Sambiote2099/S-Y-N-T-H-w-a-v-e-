@@ -255,5 +255,23 @@ and use `outputFileTracingIncludes` in `next.config.ts` so Vercel's bundler
 actually ships the font files with the serverless function. Noto Sans was
 chosen specifically for its Cyrillic + Latin Extended coverage, needed for
 the Ukrainian and German locales.
+
+## 25. Styles expanded to the 9 named genres; melodic inversion, neighbor
+tones, countermelody, atmosphere layer, and master EQ/compression added
+Style templates now explicitly cover Pop, Rock, Indie, Electronic, Ambient,
+Lo-Fi, Cinematic, Jazz, and Synthwave (plus Ballad and Funk-Groove as bonus
+variety) — Pop and Rock were split from one shared template into two
+distinct ones for clearer genre contrast. Motif variation gained melodic
+inversion (notes reflected around the motif's first note in scale-degree
+space — a simplified stand-in for true interval inversion). Melody's
+non-chord-tone choices now favor genuine neighbor tones (the scale step
+adjacent to a chord tone) rather than an arbitrary scale pick. A sparse
+countermelody voice and a slow atmospheric pad wash were added as optional
+extra layers, enabled per style. Master-bus Compressor and EQ3 were added
+with fixed, genre-appropriate settings per style (e.g. rock gets punchier
+compression and a presence boost; lofi rolls off highs; jazz keeps
+compression minimal to preserve dynamics) — these are production
+characteristics of a genre, not something that should randomize per song
+within that genre, so they're fixed per template rather than seeded.
 ---
 This file is updated as new ambiguities are resolved in later phases.

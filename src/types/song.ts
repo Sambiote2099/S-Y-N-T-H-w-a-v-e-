@@ -91,8 +91,8 @@ export interface HitEvent {
 export interface SongAudio {
   tempoBpm: number;
   key: string;
-  scaleName: string;        // e.g. "major", "dorian", "harmonic minor" — the real scale used for melody
-  mode: "major" | "minor";  // simplified harmonic family, used for chord progressions + display
+  scaleName: string;
+  mode: "major" | "minor";
   durationSeconds: number;
   lyricCueTimes: number[];
   effects: {
@@ -101,12 +101,19 @@ export interface SongAudio {
     delayFeedback: number;
     chorusWet: number;
     chorusFrequency: number;
+    eqLow: number;
+    eqMid: number;
+    eqHigh: number;
+    compressorThreshold: number;
+    compressorRatio: number;
   };
   tracks: {
     bass: { wave: OscillatorWave; envelope: EnvelopeSettings; notes: NoteEvent[] };
     pad: { wave: OscillatorWave; envelope: EnvelopeSettings; chords: ChordEvent[] };
     melody: { wave: OscillatorWave; envelope: EnvelopeSettings; notes: NoteEvent[] };
     percussion?: { kick: HitEvent[]; hat: HitEvent[]; snare: HitEvent[] };
+    countermelody?: { notes: NoteEvent[] };
+    atmosphere?: { chords: ChordEvent[] };
   };
 }
 /** One timed line of lyrics, for the synced-scrolling stretch goal (Phase 11). */
